@@ -142,7 +142,8 @@ open sample/打开相册.html
 
 ## 支持的格式
 
-- **图片**:jpg / png / gif / webp / bmp / avif / heic / tiff
+- **图片**:jpg / png / gif / webp / bmp / avif / heic / tiff / dng(RAW)
+  - heic / tiff / dng 浏览器不能直接显示,扫描时用 macOS `sips` 转出网页版 JPEG(下载仍是原始文件)
 - **视频**:mp4 / mov / m4v / webm / mkv / avi …(能否播放取决于浏览器对该编码的支持)
   - 想要最稳的视频封面,建议装 `ffmpeg`(`brew install ffmpeg`);macOS 不装也行,会用系统 `qlmanage` 兜底
 

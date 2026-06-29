@@ -18,10 +18,11 @@ import exifReader from 'exif-reader';
 const execFileP = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.avif', '.heic', '.heif', '.tif', '.tiff']);
+const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.avif', '.heic', '.heif', '.tif', '.tiff', '.dng']);
 const VIDEO_EXT = new Set(['.mp4', '.mov', '.m4v', '.webm', '.mkv', '.avi', '.ogv', '.3gp']);
 // Formats most browsers can't display — we transcode a web-viewable JPEG for these.
-const NONWEB_EXT = new Set(['.heic', '.heif', '.tif', '.tiff']);
+// .dng (and other RAW) decode via macOS sips/ImageIO; add more RAW exts here the same way.
+const NONWEB_EXT = new Set(['.heic', '.heif', '.tif', '.tiff', '.dng']);
 // Everything we write lives under APP_DIR (except the entry page at the root).
 // Leading underscore keeps it from being confused with the user's own photo folders.
 const APP_DIR = '_pocketalbum';
