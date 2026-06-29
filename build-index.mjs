@@ -193,9 +193,11 @@ async function processVideo(file, id) {
 async function copyApp(targetRoot) {
   const appDir = path.join(__dirname, 'app');
   await fs.mkdir(path.join(targetRoot, APP_DIR), { recursive: true });
-  // the entry page lives at the root (the thing you double-click); the rest under APP_DIR.
+  // Two identical entry pages at the root (the rest lives under APP_DIR):
+  //  · 打开相册.html — the thing you double-click in Finder (offline file://)
+  //  · index.html    — so a local HTTP server (e.g. PocketServer on iOS) auto-serves it at "/"
   await fs.copyFile(path.join(appDir, 'index.html'), path.join(targetRoot, ENTRY));
-  await fs.unlink(path.join(targetRoot, 'index.html')).catch(() => {});   // clear stale default-named entry
+  await fs.copyFile(path.join(appDir, 'index.html'), path.join(targetRoot, 'index.html'));
   for (const f of ['app.css', 'app.js']) {
     await fs.copyFile(path.join(appDir, f), path.join(targetRoot, APP_DIR, f));
   }
@@ -218,7 +220,7 @@ async function main() {
       log(`  First time / after adding photos, run a scan explicitly:`);
       log(`      node build-index.mjs "${root}" --scan`);
     } else {
-      log(`✓ updated ${ENTRY} + ${APP_DIR}/app.js + ${APP_DIR}/app.css → ${root}`);
+      log(`✓ updated ${ENTRY} + index.html + ${APP_DIR}/app.js + ${APP_DIR}/app.css → ${root}`);
       log('  (app updated; photos NOT rescanned — use --scan to re-scan)');
     }
     return;
@@ -369,7 +371,7 @@ async function main() {
   log('');
   log(`✓ ${items.length} items  (${manifest.counts.images} images, ${manifest.counts.videos} videos)`);
   log(`  thumbnails: ${made} generated, ${reused} reused, ${pruned} pruned`);
-  log(`  wrote ${ENTRY} → ${root}`);
+  log(`  wrote ${ENTRY} + index.html → ${root}`);
   log(`  wrote app.js, app.css, media-index.js, thumbs/ → ${path.join(root, APP_DIR)}`);
   log('');
   log(`Open ${path.join(root, ENTRY)} in a browser.`);
