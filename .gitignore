@@ -11,3 +11,5 @@ sample/
 .DS_Store
 Thumbs.db
 *.log
+
+.idea/
