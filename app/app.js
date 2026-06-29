@@ -640,6 +640,14 @@
     $('navInto').addEventListener('click', treeToggle);      // 展开 / 收起
 
     document.addEventListener('keydown', function (e) {
+      // Space toggles fullscreen <-> browse (from anywhere except the search box)
+      if (e.key === ' ' && document.activeElement !== $('search')) {
+        e.preventDefault();
+        if (!$('lightbox').hidden) closeLightbox();
+        else if (state.sel >= 0) openLightbox(state.sel);
+        else if (state.view.length) openLightbox(0);
+        return;
+      }
       if (!$('lightbox').hidden) {                 // lightbox open: arrows switch photos (↑←prev, ↓→next)
         if (e.key === 'Escape') closeLightbox();
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); step(-1); }
@@ -656,7 +664,7 @@
         else if (e.key === 'ArrowRight') { e.preventDefault(); selectTile(state.sel < 0 ? 0 : s + 1); }
         else if (e.key === 'ArrowUp') { e.preventDefault(); selectTile(state.sel < 0 ? 0 : s - cols); }
         else if (e.key === 'ArrowDown') { e.preventDefault(); selectTile(state.sel < 0 ? 0 : s + cols); }
-        else if (e.key === 'Enter' || e.key === ' ') { if (state.sel >= 0) { e.preventDefault(); openLightbox(state.sel); } }
+        else if (e.key === 'Enter') { if (state.sel >= 0) { e.preventDefault(); openLightbox(state.sel); } }
         return;
       }
       // tree focused: ← collapse, → expand, ↑/↓ move through visible rows, Enter opens first photo
