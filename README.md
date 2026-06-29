@@ -6,6 +6,8 @@
 
 插上 U 盘 → 双击里面的 `打开相册.html` → 在浏览器里像相册一样浏览。电脑上是大图瀑布 + 目录树,手机上是紧凑网格 + 滑动。
 
+![Pocket Album 界面截图](docs/screenshot.png)
+
 ## 平台支持
 
 | 平台 | 支持 |
@@ -77,7 +79,7 @@ open sample/打开相册.html
 
 ## 致谢
 
-为整理家人的照片而做。Built with [sharp](https://sharp.pixelplumbing.com/).
+Built with [sharp](https://sharp.pixelplumbing.com/).
 
 ## License
 
