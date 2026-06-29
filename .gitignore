@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Claude Code local settings
+.claude/
+
+# Generated test gallery (recreate with: npm run sample)
+sample/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log

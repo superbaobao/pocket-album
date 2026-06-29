@@ -1,0 +1,19 @@
+{
+  "name": "pocket-album",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Turn a USB drive of photos/videos into a double-click, offline, responsive web gallery. Static, no server.",
+  "license": "MIT",
+  "bin": {
+    "pocket-album": "./build-index.mjs"
+  },
+  "scripts": {
+    "update": "node build-index.mjs",
+    "scan": "node build-index.mjs",
+    "sample": "node make-sample.mjs && node build-index.mjs ./sample --scan"
+  },
+  "dependencies": {
+    "exif-reader": "^2.0.1",
+    "sharp": "^0.33.5"
+  }
+}

@@ -1,0 +1,84 @@
+# Pocket Album
+
+> 把一个装满照片/视频的 U 盘,变成**双击即开、离线、响应式**的网页相册。无需服务器、无需联网、不改动你的原始文件。
+>
+> *Turn a USB drive of photos & videos into a double-click, offline, responsive web gallery — no server, no internet, your originals untouched.*
+
+插上 U 盘 → 双击里面的 `打开相册.html` → 在浏览器里像相册一样浏览。电脑上是大图瀑布 + 目录树,手机上是紧凑网格 + 滑动。
+
+## 平台支持
+
+| 平台 | 支持 |
+|------|------|
+| **电脑**(macOS / Windows / Linux) | ✅ 双击即用,体验最佳 |
+| **安卓** | ✅ 文件管理器里打开即用 |
+| **iPhone / iPad** | ⚠️ iOS 沙箱限制,无法从 U 盘运行本地网页;请用系统「文件」App 浏览 |
+
+## 快速开始
+
+需要一台装了 [Node.js](https://nodejs.org) 的电脑,**只在建索引时用一次**。
+
+```bash
+git clone git@github.com:superbaobao/pocket-album.git
+cd pocket-album
+npm install                                  # 仅首次,安装 sharp
+
+node build-index.mjs /Volumes/你的U盘 --scan   # macOS,首次/加了新照片用 --scan
+# Windows:  node build-index.mjs E:\ --scan
+```
+
+> **`--scan` vs 默认**:不带 `--scan` 时脚本只**更新相册程序**(很快,不动照片);带 `--scan` 才会**扫描照片、生成缩略图**。所以日常升级程序用默认即可,只有第一次或新增了照片才需要 `--scan`,避免误触发全量重扫。
+
+完成后,U 盘根目录很干净:
+
+```
+U盘/
+├── 打开相册.html        ← 双击这个观看
+├── _pocketalbum/        ← 程序与缩略图(app.js / app.css / media-index.js / thumbs / web)
+└── 你的照片视频目录/      ← 原样不动
+```
+
+加了新照片?**再跑一次 `--scan`** 即可——增量,只处理新文件。
+
+## 工作原理
+
+浏览器出于安全限制不能直接读取本地文件夹,所以 `build-index.mjs` 会:扫描目录树 → 生成缩略图 → 把文件清单内联进 `media-index.js`(用 `<script>` 加载,绕开 `file://` 不能 `fetch` 的限制)→ 把相册程序拷到 U 盘。之后整套是**纯静态**的,离线运行,不上传任何数据。
+
+## 功能
+
+- 可折叠的目录树(手风琴式)、面包屑导航、目录中定位所选照片
+- 响应式:电脑大图网格 + 键盘导航;手机紧凑网格 + 滑动
+- 缩略图懒加载 + 分块渲染,几万张也流畅
+- 全屏看图:← → / ↑ ↓ 切换、下滑关闭、原生视频播放、下载原图
+- 按时间 / 文件名排序;按「照片 / 视频 / 全部」筛选;搜索文件名与目录名
+- **HEIC(iPhone 照片)**:macOS 上用系统 `sips` 自动转出网页可看的 JPEG;下载时仍给原始 `.heic`
+- 视频缩略图在浏览器里抓帧生成并缓存(无需 ffmpeg)
+- 入口页自动显示 U 盘卷名
+
+### HEIC 占空间提示
+
+每张 HEIC 会多生成一份网页版 JPEG(约 0.8–1.5MB)。U 盘空间紧张时降低分辨率:
+
+```bash
+node build-index.mjs /Volumes/你的U盘 --scan --web=1600   # web 版最长边 1600px(默认 2560)
+```
+
+## 本地试玩
+
+```bash
+npm run sample        # 生成 ./sample 测试图并建索引
+open sample/打开相册.html
+```
+
+## 支持的格式
+
+- **图片**:jpg / png / gif / webp / bmp / avif / heic / tiff
+- **视频**:mp4 / mov / m4v / webm / mkv / avi …(能否播放取决于浏览器对该编码的支持)
+
+## 致谢
+
+为整理家人的照片而做。Built with [sharp](https://sharp.pixelplumbing.com/).
+
+## License
+
+[MIT](LICENSE)

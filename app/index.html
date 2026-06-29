@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e0e10">
+  <title>Media Viewer</title>
+  <link rel="stylesheet" href="_pocketalbum/app.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <header class="topbar">
+      <button id="menuBtn" class="iconbtn only-mobile" aria-label="目录" title="目录">☰</button>
+      <h1 id="rootTitle" class="brand">Media</h1>
+      <div class="spacer"></div>
+      <input id="search" class="search" type="search" placeholder="搜索…" autocomplete="off">
+      <button id="mediaBtn" class="iconbtn" title="类型筛选"><span id="mediaLabel">照片+视频</span></button>
+      <button id="sortBtn" class="iconbtn" title="排序">↕ <span id="sortLabel">时间 早→晚</span></button>
+    </header>
+
+    <div class="body">
+      <aside id="sidebar" class="sidebar">
+        <nav id="tree" class="tree"></nav>
+        <div class="navbar" id="navbar">
+          <div class="nav-actions">
+            <button class="navbtn" id="navPrev" title="上移">↑</button>
+            <button class="navbtn" id="navNext" title="下移">↓</button>
+            <button class="navbtn" id="navInto" title="展开 / 收起子目录">展开</button>
+          </div>
+        </div>
+      </aside>
+      <div id="resizer" class="resizer" title="拖拽调整目录宽度"></div>
+      <div id="scrim" class="scrim"></div>
+
+      <main id="main" class="main">
+        <div class="crumbbar">
+          <div class="crumb-actions">
+            <button class="iconbtn locate" id="navUp" title="上一层目录" aria-label="上一层"><span class="ic flip">⤵</span></button>
+            <button class="iconbtn locate" id="locateBtn" title="在目录树中定位所选照片所在的子目录">◎</button>
+          </div>
+          <nav class="nav-path" id="navPath"></nav>
+        </div>
+        <div id="grid" class="grid"></div>
+        <div id="sentinel" class="sentinel"></div>
+        <div id="empty" class="empty" hidden>这个目录里没有可显示的媒体。</div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" hidden>
+    <button class="lb-close iconbtn" id="lbClose" aria-label="关闭">✕</button>
+    <a class="lb-download iconbtn" id="lbDownload" download aria-label="下载原图" title="下载原图">⬇</a>
+    <div class="lb-counter" id="lbCounter"></div>
+    <button class="lb-nav lb-prev iconbtn" id="lbPrev" aria-label="上一张">‹</button>
+    <div class="lb-stage" id="lbStage"></div>
+    <button class="lb-nav lb-next iconbtn" id="lbNext" aria-label="下一张">›</button>
+    <div class="lb-info" id="lbInfo"></div>
+  </div>
+
+  <noscript>本应用需要 JavaScript。</noscript>
+  <script src="_pocketalbum/media-index.js"></script>
+  <script src="_pocketalbum/app.js"></script>
+</body>
+</html>
