@@ -54,7 +54,7 @@ U盘/
 - 全屏看图:← → / ↑ ↓ 切换、下滑关闭、原生视频播放、下载原图
 - 按时间 / 文件名排序;按「照片 / 视频 / 全部」筛选;搜索文件名与目录名
 - **HEIC(iPhone 照片)**:macOS 上用系统 `sips` 自动转出网页可看的 JPEG;下载时仍给原始 `.heic`
-- 视频缩略图在浏览器里抓帧生成并缓存(无需 ffmpeg)
+- **视频封面**:扫描时生成真实缩略图(优先 `ffmpeg`,macOS 上回退系统 `qlmanage`),离线、跨编码都能显示;两者都没有时再回退浏览器抓帧
 - 入口页自动显示 U 盘卷名
 
 ### HEIC 占空间提示
@@ -144,6 +144,7 @@ open sample/打开相册.html
 
 - **图片**:jpg / png / gif / webp / bmp / avif / heic / tiff
 - **视频**:mp4 / mov / m4v / webm / mkv / avi …(能否播放取决于浏览器对该编码的支持)
+  - 想要最稳的视频封面,建议装 `ffmpeg`(`brew install ffmpeg`);macOS 不装也行,会用系统 `qlmanage` 兜底
 
 ## 致谢
 

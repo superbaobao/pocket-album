@@ -103,8 +103,7 @@
     if (it.type === 'image') {
       img.dataset.src = enc(it.thumb || it.path);
     } else {
-      // video: try a cached/in-browser poster, else a neutral placeholder
-      img.dataset.src = TRANSPARENT;
+      // video: prefer the server-generated poster; else try an in-browser frame grab
       var play = document.createElement('div');
       play.className = 'vplay';
       play.innerHTML = '<span></span>';
@@ -113,7 +112,12 @@
       badge.className = 'badge';
       badge.textContent = (it.path.split('.').pop() || 'video').toUpperCase();
       tile.appendChild(badge);
-      requestPoster(it, img);
+      if (it.thumb) {
+        img.dataset.src = enc(it.thumb);
+      } else {
+        img.dataset.src = TRANSPARENT;
+        requestPoster(it, img);
+      }
     }
     tile.insertBefore(img, tile.firstChild);
     io.observe(img);

@@ -35,6 +35,8 @@ const THUMB_MAX = 480;       // longest edge, px
 const CONCURRENCY = 6;
 
 let HAS_SIPS = false;        // detected at startup (macOS); enables HEIC/TIFF support
+let HAS_FFMPEG = false;      // ffmpeg present? (cross-platform video frame extraction)
+let HAS_QL = false;          // qlmanage present? (macOS Quick Look video posters)
 
 const rawArgs = process.argv.slice(2);
 const args = rawArgs.filter((a) => !a.startsWith('-'));
@@ -145,6 +147,48 @@ async function processImage(file, id) {
   return { w, h, time, thumb: thumbOk ? thumbRel : null, web };
 }
 
+// Extract a single representative frame from a video into an image file.
+// Prefers ffmpeg (cross-platform, seeks ~1s in); falls back to qlmanage (macOS Quick Look).
+// Returns the absolute path of the extracted frame, or null.
+async function extractVideoFrame(src, outDir, id) {
+  if (HAS_FFMPEG) {
+    const out = path.join(outDir, `${id}.frame.jpg`);
+    try {
+      await execFileP('ffmpeg', ['-y', '-ss', '1', '-i', src, '-frames:v', '1',
+        '-vf', `scale='min(${THUMB_MAX},iw)':-2`, '-q:v', '4', out], { maxBuffer: 1 << 20 });
+      if (await fs.access(out).then(() => true).catch(() => false)) return out;
+    } catch { /* fall through */ }
+  }
+  if (HAS_QL) {
+    try {
+      await execFileP('qlmanage', ['-t', '-s', String(THUMB_MAX), '-o', outDir, src], { maxBuffer: 1 << 20 });
+      const png = path.join(outDir, path.basename(src) + '.png');   // qlmanage names it <file>.png
+      if (await fs.access(png).then(() => true).catch(() => false)) return png;
+    } catch { /* give up */ }
+  }
+  return null;
+}
+
+async function processVideo(file, id) {
+  const thumbRel = `${THUMB_DIR}/${id}.webp`;
+  const thumbAbs = path.join(root, thumbRel);
+  const tmpDir = path.join(root, THUMB_DIR);
+  let w = null, h = null, time = null;
+
+  const frame = await extractVideoFrame(file.abs, tmpDir, id);
+  let thumbOk = false;
+  if (frame) {
+    thumbOk = await makeThumb(frame, thumbAbs);
+    if (thumbOk) {
+      try { const m = await sharp(thumbAbs).metadata(); w = m.width ?? null; h = m.height ?? null; } catch { /* ratio optional */ }
+    }
+    await fs.unlink(frame).catch(() => {});
+  }
+  if (!thumbOk) log(`  ! video poster failed: ${file.rel}`);
+  if (HAS_SIPS) time = await mdlsDate(file.abs);
+  return { w, h, time, thumb: thumbOk ? thumbRel : null, web: null };
+}
+
 async function copyApp(targetRoot) {
   const appDir = path.join(__dirname, 'app');
   await fs.mkdir(path.join(targetRoot, APP_DIR), { recursive: true });
@@ -182,6 +226,9 @@ async function main() {
   log(`Scanning: ${root}`);
 
   HAS_SIPS = await execFileP('sips', ['--help']).then(() => true).catch(() => false);
+  HAS_FFMPEG = await execFileP('ffmpeg', ['-version']).then(() => true).catch(() => false);
+  HAS_QL = process.platform === 'darwin'
+    && await execFileP('which', ['qlmanage']).then(() => true).catch(() => false);
 
   const thumbDirAbs = path.join(root, THUMB_DIR);
   await fs.mkdir(thumbDirAbs, { recursive: true });
@@ -196,7 +243,13 @@ async function main() {
 
   const files = await walk(root);
   const nonWeb = files.filter((f) => NONWEB_EXT.has(f.ext)).length;
+  const nVideo = files.filter((f) => f.type === 'video').length;
   log(`Found ${files.length} media files. Generating thumbnails…`);
+  if (nVideo) {
+    if (HAS_FFMPEG) log(`  ${nVideo} videos → poster frames via ffmpeg.`);
+    else if (HAS_QL) log(`  ${nVideo} videos → poster frames via qlmanage (Quick Look).`);
+    else log(`  ⚠ ${nVideo} videos found but neither 'ffmpeg' nor 'qlmanage' is available — install ffmpeg for video previews.`);
+  }
   if (nonWeb) {
     if (HAS_SIPS) log(`  ${nonWeb} HEIC/TIFF will be transcoded to web-viewable JPEG (sips).`);
     else log(`  ⚠ ${nonWeb} HEIC/TIFF found but 'sips' is unavailable — these may not display in browsers.`);
@@ -234,8 +287,18 @@ async function main() {
         if (rec.thumb) usedThumbs.add(`${id}.webp`);
         if (rec.web) usedWeb.add(`${id}.jpg`);
       } else {
-        // video: no server-side thumb; the viewer grabs a frame in-browser and caches it
-        rec = { w: null, h: null, time: null, thumb: null, web: null };
+        // video: extract a poster frame (ffmpeg/qlmanage); the viewer falls back to in-browser grab if null
+        const cached = cache[file.rel];
+        const thumbExists = cached?.thumb
+          && await fs.access(path.join(root, cached.thumb)).then(() => true).catch(() => false);
+        if (cached && cached.mtime === sig.mtime && cached.size === sig.size && thumbExists) {
+          rec = { w: cached.w, h: cached.h, time: cached.time, thumb: cached.thumb, web: null };
+          reused++;
+        } else {
+          rec = await processVideo(file, id);
+          made++;
+        }
+        if (rec.thumb) usedThumbs.add(`${id}.webp`);
       }
       const time = rec.time ?? sig.mtime;
 
