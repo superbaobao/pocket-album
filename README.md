@@ -79,7 +79,7 @@ open sample/打开相册.html
 
 ## 致谢
 
-Built with [sharp](https://sharp.pixelplumbing.com/).
+为整理家人的照片而做。Built with [sharp](https://sharp.pixelplumbing.com/).
 
 ## License
 
